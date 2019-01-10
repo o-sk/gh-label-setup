@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 
+	"github.com/google/go-github/github"
 	"github.com/jinzhu/configor"
 	"github.com/urfave/cli"
+	"golang.org/x/oauth2"
 )
 
 var Config = struct {
@@ -17,7 +20,6 @@ var Config = struct {
 
 func main() {
 	configor.Load(&Config, "config.toml")
-	fmt.Printf("%#v", Config.Github.AccessToken)
 	app := cli.NewApp()
 
 	app.Name = "gh-label-setup"
@@ -32,7 +34,22 @@ func main() {
 			return errors.New("Repository not given")
 		}
 
-		fmt.Printf("%s", repository)
+		ctx := context.Background()
+		ts := oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: Config.Github.AccessToken},
+		)
+		tc := oauth2.NewClient(ctx, ts)
+		client := github.NewClient(tc)
+
+		labels, _, err := client.Issues.ListLabels(ctx, "o-sk", repository, nil)
+		if err != nil {
+			return err
+		}
+
+		for _, label := range labels {
+			fmt.Printf("%s\n", github.Stringify(label.Name))
+		}
+
 		return nil
 	}
 	err := app.Run(os.Args)
