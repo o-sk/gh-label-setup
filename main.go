@@ -5,11 +5,21 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jinzhu/configor"
 	"github.com/urfave/cli"
 )
 
+var Config = struct {
+	Github struct {
+		AccessToken string
+	}
+}{}
+
 func main() {
+	configor.Load(&Config, "config.toml")
+	fmt.Printf("%#v", Config.Github.AccessToken)
 	app := cli.NewApp()
+
 	app.Name = "gh-label-setup"
 	app.Usage = "Setup Github label in the repository"
 	app.Version = "0.0.1"
