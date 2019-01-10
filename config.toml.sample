@@ -1,0 +1,10 @@
+[Github]
+AccessToken = "<your access token>"
+[[Label]]
+Name = "wip"
+Color = "b2dd71"
+Description = "Work in progress"
+[[Label]]
+Name = "ready"
+Color = "14ba40"
+Description = "Release ready"
