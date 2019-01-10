@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/google/go-github/github"
 	"github.com/jinzhu/configor"
@@ -15,6 +16,11 @@ import (
 var Config = struct {
 	Github struct {
 		AccessToken string
+	}
+	Label []struct {
+		Name        string
+		Color       string
+		Description string
 	}
 }{}
 
@@ -27,9 +33,10 @@ func main() {
 	app.Version = "0.0.1"
 
 	app.Action = func(c *cli.Context) error {
-		var repository string
+		var owner, repository string
 		if c.NArg() > 0 {
-			repository = c.Args().Get(0)
+			owner = strings.Split(c.Args().Get(0), "/")[0]
+			repository = strings.Split(c.Args().Get(0), "/")[1]
 		} else {
 			return errors.New("Repository not given")
 		}
@@ -41,13 +48,16 @@ func main() {
 		tc := oauth2.NewClient(ctx, ts)
 		client := github.NewClient(tc)
 
-		labels, _, err := client.Issues.ListLabels(ctx, "o-sk", repository, nil)
-		if err != nil {
-			return err
-		}
-
-		for _, label := range labels {
-			fmt.Printf("%s\n", github.Stringify(label.Name))
+		for _, label := range Config.Label {
+			l := &github.Label{
+				Name:        &label.Name,
+				Color:       &label.Color,
+				Description: &label.Description,
+			}
+			_, _, err := client.Issues.CreateLabel(ctx, owner, repository, l)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
