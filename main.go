@@ -56,7 +56,7 @@ func main() {
 			}
 			_, _, err := client.Issues.CreateLabel(ctx, owner, repository, l)
 			if err != nil {
-				return err
+				fmt.Printf("%s\n", err)
 			}
 		}
 
